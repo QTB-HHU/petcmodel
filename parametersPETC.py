@@ -26,12 +26,12 @@ class ParametersPETC:
         # pool sizes
         'PSIItot': 2.5, # [mmol/molChl] total concentration of PSII
         'PSItot': 2.5,
-	    'PQtot': 17.5, # [mmol/molChl]
-	    'PCtot': 4., # Bohme1987, but other sources give different values - seems to depend greatly on organism and conditions
+	'PQtot': 17.5, # [mmol/molChl]
+	'PCtot': 4., # Bohme1987, but other sources give different values - seems to depend greatly on organism and conditions
         'Fdtot': 5., # Bohme1987
         'Ctot': 2.5, #source unclear (Schoettler says 0.4...?, but plausible to assume that complexes (PSII,PSI,b6f) have approx. same abundance)
         'NADPtot': 25., # estimate from ~ 0.8 mM, Heineke1991
-	    'APtot': 60., # [mmol/molChl] Bionumbers ~2.55mM (=81mmol/molChl) (FIXME: Soma had 50)
+	'APtot': 60., # [mmol/molChl] Bionumbers ~2.55mM (=81mmol/molChl) (FIXME: Soma had 50)
 
 	
         # parameters associated with photosystem II
@@ -46,7 +46,7 @@ class ParametersPETC:
         'kStt7': 0.0035, # [s-1] fitted to the FM dynamics
         'kPph1': 0.0013, # [s-1] fitted to the FM dynamics
         'KM_ST': 0.2, # Switch point (half-activity of Stt7) for 20% PQ oxidised (80% reduced)
-        'n_ST': 2, # Hill coefficient of 4 -> 1/(2.5^4)~1/40 activity at PQox=PQred
+        'n_ST': 2., # Hill coefficient of 4 -> 1/(2.5^4)~1/40 activity at PQox=PQred
         'staticAntI': 0.2,
         'staticAntII': 0.0,
 
@@ -63,7 +63,7 @@ class ParametersPETC:
         'NADPHcyt': 0.5, # only relatice levels
 
         # global conversion factor of PFD to excitation rate
-        'cPFD': 4, # [m^2/mmol PSII] - FIXME: check the units carefully!
+        'cPFD': 4., # [m^2/mmol PSII] 
 
         # pH and protons
         'pHstroma': 7.8,
@@ -107,7 +107,7 @@ class ParametersPETC:
     }
 
 
-    def __init__(self, pars = {}): # -- Anna changed here for pars to be optional
+    def __init__(self, pars = {}):
         mypars = pars.copy()
         for k in ParametersPETC.defaultparameterset.keys():
             mypars.setdefault(k,ParametersPETC.defaultparameterset[k])
@@ -129,7 +129,7 @@ class ParametersPETC:
     def setCompositeParameters(self):
         setattr(self, 'RT', self.R * self.T)
         setattr(self, 'dG_pH', log(10)*self.RT)
-        setattr(self, 'Hstroma', 3.2e4*10**(-self.pHstroma)) # proton concentration in stroma -- Anna
+        setattr(self, 'Hstroma', 3.2e4*10**(-self.pHstroma)) # proton concentration in stroma
         setattr(self, 'kProtonation', 4e-3 / self.Hstroma) # [1/s] converted from 4 * 10^-6 [1/ms] protonation of LHCs (L), depends on pH value in lumen
 
 
@@ -181,16 +181,3 @@ class ParametersPETC:
         DG = -2 * DG1 + DG2 + self.dG_pH * self.pHstroma
         K = exp(-DG/self.RT)
         return K
-
-    #def parFreeA(self):
-    #    '''
-    #    dictionary of parameters associated with the free antennae modul
-    #    allows to calculate cross section of PSI, PSII and free Antennae
-    #    '''
-    #    return {'Atot': 1, # total number of antennae, so far set to 1, but we want to distiguish between organisms that have significantly lower number of antennae
-    #                'K1': 0.01,
-    #                'K2': 100,
-    #                'K1p': 90,
-    #                'K2p': 0.01,
-    #                'PSIbins_tot': 1,# PSI total number of binding sites, shall not be set to 1
-    #                'PSIIbins_tot': 1}# PSI total number of binding sites
