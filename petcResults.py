@@ -41,24 +41,34 @@ class PETCResults(Sim):
 
 
     def plotRel(self, r=None):
-
+        """ plot results of integration
+            six plots for PQ, PC, Fd, ATP, NADPH antennae
+        """
 
         if r == None:
             r = range(len(self.results))
 
-        v_labels = ['PQH2', 'ATP', 'antennae', 'H', 'Q']
-
         for i in r:
-            #print(i)
             t = self.results[i]['t']
             y = self.results[i]['y']
-            plt.plot(t,1-y[:,0]/self.par.PQtot,color='red') # PQred
-            plt.plot(t,y[:,3]/self.par.APtot,color='yellow') # ATP
-            plt.plot(t,y[:,6]/self.par.Ltot,color='cyan') # antennae
-            plt.plot(t,y[:,5],color='blue') # H
-        plt.suptitle('Results')
-        plt.xlabel('time')
-        plt.legend(loc ='best')
+            if i == 0:  # unique labels
+                plt.plot(t, 1 - y[:,0]/self.par.PQtot, color='red', label = 'PQred') # PQred
+                plt.plot(t, 1 - y[:,1]/self.par.PCtot, color='blue', label = 'PCred') # PC
+                plt.plot(t, 1 - y[:,2]/self.par.Fdtot, color='yellow', label = 'Fdred') # Fd
+                plt.plot(t, y[:,3]/self.par.APtot, color='magenta', label = 'ATP') # ATP
+                plt.plot(t, y[:,4]/self.par.NADPtot, color='cyan', label = 'NADPH') # NADPH
+                plt.plot(t, y[:,6], color='green', label = 'CSII') # antennae on photosystem II
+            else:
+                plt.plot(t, 1 - y[:,0]/self.par.PQtot, color='red')     # PQred
+                plt.plot(t, 1 - y[:,1]/self.par.PCtot, color='blue')    # PC
+                plt.plot(t, 1 - y[:,2]/self.par.Fdtot, color='yellow')  # Fd
+                plt.plot(t, y[:,3]/self.par.APtot, color='magenta')     # ATP
+                plt.plot(t, y[:,4]/self.par.NADPtot, color='cyan')      # NADPH
+                plt.plot(t, y[:,6], color='green')                      # antennae on photosystem II
+
+            plt.xlabel('time')
+            plt.title('Temporal evolution of state variables')
+            plt.legend(loc= 'best') 
 
 
     def plotV(self, v, r=None):
@@ -72,8 +82,6 @@ class PETCResults(Sim):
             y = self.results[i]['y']
             l = self.results[i]['lfn']
 
-            #V = [self.model.rates(y[i],l.lightintensity([t[i]]))[v] for i in range(len(t))]
-            # time not as a list
             V = [self.model.rates(y[i],l.lightintensity(t[i]))[v] for i in range(len(t))]
             plt.plot(t,V)
 
