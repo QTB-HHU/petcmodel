@@ -32,7 +32,10 @@ class PETCResults(Sim):
         self.results = s.results
         self.par = s.model.par
 
+
     def plotph(self, r=None):
+        """ plot lumenal pH """
+
         if r == None:
             r = range(len(self.results))
 
@@ -42,7 +45,7 @@ class PETCResults(Sim):
 
     def plotRel(self, r=None):
         """ plot results of integration
-            six plots for PQ, PC, Fd, ATP, NADPH antennae
+            six plots for reduced PQ, PC, Fd, and concentration of ATP and  NADPH + cross section of PSII
         """
 
         if r == None:
@@ -68,10 +71,11 @@ class PETCResults(Sim):
 
             plt.xlabel('time')
             plt.title('Temporal evolution of state variables')
-            plt.legend(loc= 'best') 
+            plt.legend(loc= 'best')
 
 
     def plotV(self, v, r=None):
+        """ plot selected reaction rate """
 
         if r == None:
             r = range(len(self.results))
@@ -87,9 +91,10 @@ class PETCResults(Sim):
 
 
     def fluo(self, r=None):
-        '''
-        :return: time vector, fluorescence, maximal fluorescence, steady state fluorescence
-        '''
+        """ return values required for plotting fluorescence traces
+            return: time vector, overall fluorescence from PSII, fluorescence emitted from open reaction centres,
+            fluorescence emitted from closed reaction centres and state of the PSII
+        """
 
         if r == None:
             r = range(len(self.results))
@@ -98,6 +103,7 @@ class PETCResults(Sim):
         F0 = []
         F = []
         T = []
+        Bst = np.array([]).reshape(0, 4)
 
         for i in r:
 
@@ -109,30 +115,29 @@ class PETCResults(Sim):
             L = y[:,7]
             H = y[:,5]
 
-            Q = self.model.quencher(L,H)
+            Q = self.model.quencher(L, H)
             cs2 = self.model.crossSectionSimple(anT)
 
-            B = [self.model.ps2states(P[i], Q[i], cs2[i] * l.lightintensity(t[i])) for i in range(len(t))]
+            B_ = [self.model.ps2states(P[i], Q[i], cs2[i] * l.lightintensity(t[i])) for i in range(len(t))]
+            B = np.array(B_)
 
-            Fzero = [cs2[i] * self.par.kF / (self.par.kF + self.par.kH0 + self.par.kH * Q[i] + self.par.k2)*x for x in [B[i][0] for i in range(len(t))]]
-            Fm = [cs2[i] * self.par.kF / (self.par.kF + self.par.kH0 + self.par.kH * Q[i])*x for x in [B[i][2] for i in range(len(t))]]
-            F_ = [x + y for x, y in zip(Fm, Fzero)]
+            Fzero = cs2 * self.par.kF / (self.par.kF + self.par.kH0 + self.par.kH * Q + self.par.k2) * B[:, 0]
+            Fm = cs2 * self.par.kF / (self.par.kF + self.par.kH0 + self.par.kH * Q) * B[:, 2]
 
-            T = np.hstack([T,t])
-            FM = np.hstack([FM, Fm])
+            T = np.hstack([T, t])
+
             F0 = np.hstack([F0, Fzero])
+            FM = np.hstack([FM, Fm])
+            Bst = np.vstack([Bst, B])
 
-        F = [x + y for x, y in zip(FM, F0)] # could hstack but was comparing two methods
+        F = [x + y for x, y in zip(FM, F0)]     # could hstack but was comparing two methods
 
-        return T, F, FM, F0
-
+        return T, F, FM, F0, Bst
 
 
     def plotFluo(self):
-        '''
-            plot fluorescence trace, uses function fluo to calculate FM and F0
-        '''
-        T, F, _, _ = self.fluo()
-        plt.plot(T,F/max(F), 'r')
+        """ plot fluorescence trace, uses function fluo to calculate FM and F0 """
+        T, F, _, _, _= self.fluo()
+        plt.plot(T, F/max(F), 'r')
         plt.xlabel('time')
         plt.title('Fluorescence trace')
